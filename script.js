@@ -138,7 +138,18 @@ function showInput(callback) {
             callback(value);
             userInput.value = '';
         }
-    }; // <--- CIERRE DE LA FUNCIÓN FLECHA handleSubmission
+    };
+
+    // Usar el botón
+    submitBtn.onclick = handleSubmission;
+    
+    // Usar la tecla Enter
+    userInput.onkeyup = (event) => {
+        if (event.key === 'Enter') {
+            handleSubmission();
+        }
+    };
+}
 
     // Usar el botón
     submitBtn.onclick = handleSubmission;
