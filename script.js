@@ -121,7 +121,6 @@ function renderOptions(optionsMap) {
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
 }
-
 function hideInput() {
     inputContainer.style.display = 'none';
 }
