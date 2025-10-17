@@ -175,6 +175,19 @@ function chooseClass(className) {
     print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
     print("Ingresa el nombre de tu Viajero del Código:");
     
+    // ESTAS DOS LÍNEAS SON CRÍTICAS
+    renderOptions({}); // Esta línea oculta los botones de clase
+    showInput((name) => { // Esta línea activa el campo de texto y el botón 'Aceptar'
+        
+        // ... (El resto de la lógica de creación de personaje) ...
+
+        print(`\n¡Bienvenido, ${player.name}!`);
+        hideInput();
+        updateStatus();
+        exploreLocation();
+    });
+}
+    
     renderOptions({});
     showInput((name) => {
         player = new Player(name.toUpperCase(), className);
