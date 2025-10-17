@@ -19,26 +19,26 @@ const ITEMS = {
 };
 
 const CLASSES = {
-    'PROGRAMADOR': { stats: { BYTE: 4, FLOP: 5, CLOCK: 8, RAM: 6, MHz: 7 }, abilities: ['REPARAR_CODIGO'], equip: ['KIT_REPARACION', 'BATERIA_PODER', 'CABLE_ETHERNET'] },
-    'HACKER': { stats: { BYTE: 5, FLOP: 9, CLOCK: 6, RAM: 5, MHz: 8 }, abilities: ['EXPLOIT_V1'], equip: ['KIT_REPARACION', 'BATERIA_PODER', 'TECLADO_LASER'] },
-    'INGENIERO': { stats: { BYTE: 8, FLOP: 4, CLOCK: 5, RAM: 8, MHz: 5 }, abilities: ['SOBRECARGA_HW'], equip: ['KIT_REPARACION', 'BATERIA_PODER', 'CHALECO_FIRMWARE'] },
+    'PROGRAMADOR': { stats: { BYTE: 4, FLOP: 5, CLOCK: 8, RAM: 6, MHz: 7 }, abilities: ['REPARAR_CODIGO'], equip: ['CABLE_ETHERNET'] },
+    'HACKER': { stats: { BYTE: 5, FLOP: 9, CLOCK: 6, RAM: 5, MHz: 8 }, abilities: ['EXPLOIT_V1'], equip: ['TECLADO_LASER'] },
+    'INGENIERO': { stats: { BYTE: 8, FLOP: 4, CLOCK: 5, RAM: 8, MHz: 5 }, abilities: ['SOBRECARGA_HW'], equip: ['CHALECO_FIRMWARE'] },
 };
 
 const MAP = {
     "DIRECTORIO_RAIZ": {
-        desc: "El Directorio Raíz. Un lugar seguro. Tienda de Bits y camino a la Cuadrícula (Este).",
+        desc: "El Directorio Raíz. Un lugar seguro y familiar. Ves una Tienda de Bits y el camino a la Cuadrícula de Circuitos (Este).",
         conn: { "ESTE": "CUADRICULA_CIRCUITOS" },
         events: ['TOWN_SAFE'],
         options: { "T": "Tienda de Bits", "C": "Reparar Código (Curar)" }
     },
     "CUADRICULA_CIRCUITOS": {
-        desc: "Laberintos de cables y componentes. Hay estática en el aire.",
+        desc: "Laberintos de cables y componentes. El aire huele a ozono y a peligro.",
         conn: { "OESTE": "DIRECTORIO_RAIZ", "NORTE": "MONTAÑAS_SILICIO" },
         events: ['COMBAT', 'ITEM_RANDOM', 'NOTHING'],
         options: { "E": "Explorar el Sector" }
     },
     "MONTAÑAS_SILICIO": {
-        desc: "Las Montañas de Silicio, frías y elevadas. La señal es débil.",
+        desc: "Las Montañas de Silicio, frías y elevadas. La señal es débil aquí.",
         conn: { "SUR": "CUADRICULA_CIRCUITOS" },
         events: ['COMBAT', 'COMBAT', 'ITEM_RARE'],
         options: { "E": "Explorar el Sector" }
@@ -51,7 +51,7 @@ class Player {
     constructor(name, chosenClass) {
         this.name = name;
         this.class = chosenClass;
-        this.inventory = [];
+        this.inventory = [ITEMS.KIT_REPARACION, ITEMS.BATERIA_PODER]; // Items iniciales
         this.equipment = { 'arma': null, 'armadura': null };
         this.bits = 100;
         
@@ -155,9 +155,9 @@ function showInput(callback) {
 
 function startGame() {
     gameState = 'START';
-    print("==================================================");
-    print("      THE BYTE LANDS: QUEST FOR THE CORE (v1.0)     ");
-    print("==================================================");
+    print("==========================================================");
+    print("      BYTE-LANDS-RPG-IBM-2000-DELUXE- V1.0 - POR KEYDALETHEWIZARD");
+    print("==========================================================");
     print("\nBienvenido. El Núcleo Central está fallando.");
     print("Tienes que elegir un arquetipo para comenzar.");
 
@@ -179,14 +179,12 @@ function chooseClass(className) {
     showInput((name) => {
         player = new Player(name.toUpperCase(), className);
         
-        // Equipar items iniciales (simple)
-        CLASSES[className].equip.forEach(itemName => {
-            const item = ITEMS[itemName];
-            player.inventory.push(item);
-            if (item.type === 'arma' && !player.equipment.arma) player.equipment.arma = item;
-            if (item.type === 'armadura' && !player.equipment.armadura) player.equipment.armadura = item;
-        });
-        
+        // Equipar arma inicial
+        const initialWeaponName = CLASSES[className].equip[0];
+        const initialWeapon = ITEMS[initialWeaponName];
+        player.inventory.push(initialWeapon);
+        player.equipment[initialWeapon.type] = initialWeapon;
+
         print(`\n¡Bienvenido, ${player.name}!`);
         hideInput();
         updateStatus();
@@ -204,29 +202,7 @@ function exploreLocation() {
     print(loc.desc);
     print("~".repeat(40));
 
-    const options = {};
-    let keyIndex = 1;
-
-    // Conexiones
-    for (const dir in loc.conn) {
-        const dest = loc.conn[dir];
-        options[keyIndex.toString()] = { 
-            label: `Ir al ${dir} (${dest.replace('_', ' ')})`, 
-            action: () => move(dest) 
-        };
-        keyIndex++;
-    }
-
-    // Eventos específicos de la ubicación (Tienda, Curar)
-    if (loc.options) {
-        for (const key in loc.options) {
-            options[key] = {
-                label: loc.options[key],
-                action: () => handleLocationAction(key)
-            };
-        }
-    }
-    
+    const options = getExploreOptions();
     renderOptions(options);
 }
 
@@ -262,7 +238,7 @@ function handleRandomEvent() {
         print("\n[EVENTO: NADA] El sector está en silencio. Sigues tu camino.");
         exploreLocation();
     } else if (event === 'TOWN_SAFE') {
-        exploreLocation(); // Ya manejado en exploreLocation, pero se mantiene para claridad
+        exploreLocation();
     }
 }
 
@@ -273,9 +249,10 @@ function handleLocationAction(actionKey) {
         player.hp_current = player.hp_max;
         player.pp_current = player.pp_max;
         print("\n[REPARACIÓN COMPLETA] Código optimizado. HP y PP restaurados.");
+        updateStatus();
         exploreLocation();
     } else if (actionKey === 'E') {
-        handleRandomEvent(); // El botón "Explorar" inicia un evento
+        handleRandomEvent();
     }
 }
 
@@ -302,12 +279,7 @@ function startCombat() {
     print("=".repeat(40));
     
     // Opciones de combate
-    const options = {
-        'A': { label: "Atacar", action: () => playerAttack() },
-        'H': { label: "Habilidad", action: () => combatAbilities() },
-        'I': { label: "Inventario", action: () => combatUseItem() },
-        'E': { label: "Escapar", action: () => attemptEscape() }
-    };
+    const options = getCombatOptions();
     renderOptions(options);
     updateStatus();
 }
@@ -355,7 +327,7 @@ function combatAbilities() {
     const abilitiesMap = {};
     player.abilities.forEach((abi, index) => {
         abilitiesMap[index + 1] = { 
-            label: abi.replace('_', ' '), 
+            label: `${abi.replace('_', ' ')} (10 PP)`, // Costo fijo para simplificar
             action: () => useAbility(abi) 
         };
     });
@@ -366,8 +338,6 @@ function combatAbilities() {
 }
 
 function useAbility(abi) {
-    // Lógica de habilidades (Simplificada)
-    // Carga de PP y efectos específicos
     let pp_cost = 10;
     let success = false;
     let damage = 0;
@@ -391,7 +361,7 @@ function useAbility(abi) {
         success = true;
     } else { // SOBRECARGA_HW
         damage = player.getAttack() * 1.5;
-        player.hp_current -= 5; // Daño de retroceso
+        player.hp_current = Math.max(0, player.hp_current - 5); // Daño de retroceso
         print(`¡SOBRECARGA! Infliges ${damage} de daño. Pierdes 5 HP.`);
         currentEnemy.hp -= damage;
         success = true;
@@ -420,7 +390,7 @@ function attemptEscape() {
     }
 }
 
-// --- LÓGICA DE INVENTARIO Y TIENDA (Simplificada) ---
+// --- LÓGICA DE INVENTARIO Y TIENDA ---
 
 function handleSystemAction(action) {
     if (action === 'S') {
@@ -437,10 +407,10 @@ function showStats() {
     statsText += `BITS: ${player.bits}\n`;
     statsText += `ARMAS: ${player.equipment.arma ? player.equipment.arma.name : 'Ninguna'} (ATK: ${player.getAttack()})\n`;
     statsText += `ARMADURA: ${player.equipment.armadura ? player.equipment.armadura.name : 'Ninguna'} (DEF: ${player.getDefense()})\n`;
-    statsText += `\nBYTE: ${player.BYTE} | FLOP: ${player.FLOP} | CLOCK: ${player.CLOCK}\n`;
-    statsText += `RAM: ${player.RAM} | MHz: ${player.MHz}`;
+    statsText += `\nBYTE (Fuerza): ${player.BYTE} | FLOP (Destreza): ${player.FLOP} | CLOCK (Inteligencia): ${player.CLOCK}\n`;
+    statsText += `RAM (Resistencia): ${player.RAM} | MHz (Velocidad): ${player.MHz}`;
     print(statsText);
-    renderOptions(getExploreOptions()); // Redibuja las opciones de exploración
+    renderOptions(getExploreOptions());
 }
 
 function showInventory(inCombat) {
@@ -472,9 +442,11 @@ function showInventory(inCombat) {
             const item = player.inventory[index];
             if (item.type === 'consumible') {
                 useConsumible(item, index);
-                if (inCombat) enemyTurn(); // Turno termina al usar
+                if (inCombat) enemyTurn();
             } else if (item.type === 'arma' || item.type === 'armadura') {
                 equipItem(item, item.type, index);
+            } else {
+                print("No se puede usar/equipar este ítem de esa forma.");
             }
         }
         
@@ -485,7 +457,7 @@ function showInventory(inCombat) {
 }
 
 function useConsumible(item, index) {
-    player.inventory.splice(index, 1); // Remover del inventario
+    player.inventory.splice(index, 1);
     if (item.effect.type === 'hp') {
         let heal = item.effect.value;
         player.hp_current = Math.min(player.hp_max, player.hp_current + heal);
@@ -499,12 +471,15 @@ function useConsumible(item, index) {
 }
 
 function equipItem(item, type, index) {
-    // Desequipar viejo item (si existe) y moverlo al inventario
+    if (player.equipment[type] && player.equipment[type] === item) {
+        print(`Ya tienes ${item.name} equipado.`);
+        return;
+    }
+    
     if (player.equipment[type]) {
         player.inventory.push(player.equipment[type]);
     }
     
-    // Equipar nuevo y remover la copia del inventario
     player.equipment[type] = item;
     player.inventory.splice(index, 1);
     
@@ -537,7 +512,7 @@ function buyItem(item) {
         player.inventory.push(item);
         print(`Compraste ${item.name}. Bits restantes: ${player.bits}`);
         updateStatus();
-        showShop(); // Vuelve a mostrar la tienda
+        showShop();
     } else {
         print("¡Bits insuficientes!");
     }
@@ -556,7 +531,6 @@ function checkLevelUp() {
         player.hp_current = player.hp_max;
         player.pp_current = player.pp_max;
         
-        // Mejora un stat aleatorio
         const stats = ['BYTE', 'FLOP', 'CLOCK', 'RAM', 'MHz'];
         const statToImprove = stats[Math.floor(Math.random() * stats.length)];
         player[statToImprove]++;
@@ -576,7 +550,6 @@ function gameOver() {
     print("FIN DEL JUEGO.");
     print("=".repeat(40));
     
-    // Ofrece la opción de empezar de nuevo
     const options = {
         '1': { label: "Volver al Menú Principal", action: startGame }
     };
@@ -613,7 +586,6 @@ function getCombatOptions() {
     return {
         'A': { label: "Atacar", action: () => playerAttack() },
         'H': { label: "Habilidad", action: () => combatAbilities() },
-        'I': { label: "Inventario", action: () => combatUseItem() },
         'E': { label: "Escapar", action: () => attemptEscape() }
     };
 }
