@@ -138,7 +138,18 @@ function showInput(callback) {
             callback(value);
             userInput.value = '';
         }
-    };
+    }; // <-- Cierre de la función flecha handleSubmission
+
+    // Usar el botón
+    submitBtn.onclick = handleSubmission;
+    
+    // Usar la tecla Enter
+    userInput.onkeyup = (event) => {
+        if (event.key === 'Enter') {
+            handleSubmission();
+        }
+    }; // <-- Cierre de la función flecha de onkeyup
+} // <-- ¡Esta llave cierra la función showInput! ¡Es la clave!
 
     // Usar el botón
     submitBtn.onclick = handleSubmission;
