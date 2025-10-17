@@ -522,31 +522,30 @@ function showInventory(inCombat) {
     print("\nIntroduce el número del ítem para USAR/EQUIPAR (0 para salir):");
     renderOptions({});
     
-    showInput((input) => {
-        let index = parseInt(input) - 1;
-        if (index === -1) {
-            hideInput();
-            if (inCombat) startCombat(); else exploreLocation();
-            return;
+function showInput(callback) {
+    inputContainer.style.display = 'flex';
+    userInput.value = '';
+    userInput.focus();
+    
+    // Función para manejar el envío
+    const handleSubmission = () => {
+        const value = userInput.value.trim();
+        if (value) {
+            callback(value);
+            userInput.value = '';
         }
+    }; // <-- CIERRE DE LA FUNCIÓN FLECHA handleSubmission
 
-        if (index >= 0 && index < player.inventory.length) {
-            const item = player.inventory[index];
-            if (item.type === 'consumible') {
-                useConsumible(item, index);
-                if (inCombat) enemyTurn();
-            } else if (item.type === 'arma' || item.type === 'armadura') {
-                equipItem(item, item.type, index);
-            } else {
-                print("No se puede usar/equipar este ítem de esa forma.");
-            }
+    // Usar el botón
+    submitBtn.onclick = handleSubmission;
+    
+    // Usar la tecla Enter
+    userInput.onkeyup = (event) => {
+        if (event.key === 'Enter') {
+            handleSubmission();
         }
-        
-        hideInput();
-        if (!inCombat) exploreLocation();
-        
-    });
-}
+    }; // <-- CIERRE DE LA FUNCIÓN FLECHA de onkeyup
+} // <-- CIERRE DE LA FUNCIÓN showInput
 
 function useConsumible(item, index) {
     player.inventory.splice(index, 1);
