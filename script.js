@@ -407,14 +407,23 @@ function attemptEscape() {
 // --- LÓGICA DE INVENTARIO Y TIENDA ---
 
 function handleSystemAction(action) {
+    // 🛑 AGREGAR ESTA LÍNEA DE VERIFICACIÓN:
+    if (!player) {
+        print("\n[SISTEMA] Debes crear tu Viajero del Código antes de acceder al menú.");
+        return;
+    }
+    // -------------------------------------
+    
     if (action === 'S') {
         showStats();
     } else if (action === 'I') {
         showInventory(gameState === 'COMBAT');
     }
 }
-
 function showStats() {
+    // ESTA LÍNEA EVITA EL ERROR 'Cannot read properties of null'
+    if (!player) return; 
+
     let statsText = `\n--- ESTADÍSTICAS DE ${player.name} ---\n`;
     statsText += `CLASE: ${player.class} | NIVEL: ${player.level}\n`;
     statsText += `EXP: ${player.exp}/${player.exp_to_level}\n`;
@@ -428,12 +437,51 @@ function showStats() {
 }
 
 function showInventory(inCombat) {
+    // 🛑 AGREGAMOS ESTA LÍNEA DE SEGURIDAD AL PRINCIPIO
+    if (!player) return; 
+    // ----------------------------------------------------
+    
     if (player.inventory.length === 0) {
         print("\n--- INVENTARIO: VACÍO ---");
         renderOptions(inCombat ? getCombatOptions() : getExploreOptions());
         return;
     }
 
+    print("\n--- INVENTARIO ---");
+    const itemMap = {};
+    player.inventory.forEach((item, index) => {
+        print(`(${index + 1}) ${item.name} (${item.type})`);
+        itemMap[index + 1] = item;
+    });
+
+    print("\nIntroduce el número del ítem para USAR/EQUIPAR (0 para salir):");
+    renderOptions({});
+    
+    showInput((input) => {
+        let index = parseInt(input) - 1;
+        if (index === -1) {
+            hideInput();
+            if (inCombat) startCombat(); else exploreLocation();
+            return;
+        }
+
+        if (index >= 0 && index < player.inventory.length) {
+            const item = player.inventory[index];
+            if (item.type === 'consumible') {
+                useConsumible(item, index);
+                if (inCombat) enemyTurn();
+            } else if (item.type === 'arma' || item.type === 'armadura') {
+                equipItem(item, item.type, index);
+            } else {
+                print("No se puede usar/equipar este ítem de esa forma.");
+            }
+        }
+        
+        hideInput();
+        if (!inCombat) exploreLocation();
+        
+    });
+}
     print("\n--- INVENTARIO ---");
     const itemMap = {};
     player.inventory.forEach((item, index) => {
