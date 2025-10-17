@@ -79,7 +79,8 @@ class Player {
         let def = this.RAM * 0.5;
         if (this.equipment.armadura) def += this.equipment.armadura.def_bonus;
         return Math.floor(def);
-    }
+    } // <--- CIERRE DE getDefense
+} // <--- CIERRE DE LA CLASE Player (¡Revisa que solo haya una llave aquí!)
 
     takeDamage(damage) {
         let finalDamage = Math.max(0, damage - this.getDefense());
@@ -116,7 +117,6 @@ function renderOptions(optionsMap) {
         button.textContent = `(${key}) ${optionsMap[key].label}`;
         button.onclick = () => optionsMap[key].action();
         optionsContainer.appendChild(button);
-    }
     // Opciones del sistema siempre presentes
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
