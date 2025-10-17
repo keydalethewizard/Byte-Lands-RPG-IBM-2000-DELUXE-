@@ -591,5 +591,12 @@ function getCombatOptions() {
 }
 
 
+// ... (Todo el código del juego) ...
+
+// Funciones auxiliares para obtener opciones de estado
+// ... (se mantienen igual las funciones getExploreOptions y getCombatOptions) ...
+
+
 // --- INICIO ---
+// Asegúrate de que esta línea esté al final de tu archivo script.js
 document.addEventListener('DOMContentLoaded', startGame);
