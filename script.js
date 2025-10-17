@@ -109,14 +109,15 @@ function updateStatus() {
 }
 
 function renderOptions(optionsMap) {
+    const optionsContainer = document.getElementById('options-container'); // <-- Debe encontrar este ID
     optionsContainer.innerHTML = '';
-    for (const key in optionsMap) {
-        const button = document.createElement('button');
-        button.className = 'option-btn';
-        button.textContent = `(${key}) ${optionsMap[key].label}`;
-        button.onclick = () => optionsMap[key].action();
-        optionsContainer.appendChild(button);
-    }
+    
+    // ... (el código interno de creación de botones) ...
+
+    // Opciones del sistema siempre presentes
+    optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
+    optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
+}
     // Opciones del sistema siempre presentes (aunque no se muestren como botón)
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
@@ -166,7 +167,7 @@ function startGame() {
         '2': { label: "Hacker (Destreza)", action: () => chooseClass('HACKER') },
         '3': { label: "Ingeniero (Fuerza/RAM)", action: () => chooseClass('INGENIERO') }
     };
-    renderOptions(options);
+    renderOptions(options); // <--- ESTA FUNCIÓN DEBE EJECUTARSE
     hideInput();
 }
 
