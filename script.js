@@ -109,16 +109,15 @@ function updateStatus() {
 }
 
 function renderOptions(optionsMap) {
-    const optionsContainer = document.getElementById('options-container'); // <-- Debe encontrar este ID
     optionsContainer.innerHTML = '';
-    
-    // ... (el código interno de creación de botones) ...
-
+    for (const key in optionsMap) {
+        const button = document.createElement('button');
+        button.className = 'option-btn';
+        button.textContent = `(${key}) ${optionsMap[key].label}`;
+        button.onclick = () => optionsMap[key].action();
+        optionsContainer.appendChild(button);
+    }
     // Opciones del sistema siempre presentes
-    optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
-    optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
-}
-    // Opciones del sistema siempre presentes (aunque no se muestren como botón)
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('I')">(I) Inventario</button>`;
     optionsContainer.innerHTML += `<button class="option-btn" onclick="handleSystemAction('S')">(S) Stats</button>`;
 }
@@ -169,55 +168,12 @@ function startGame() {
     };
     renderOptions(options);
     hideInput();
-} // <-- CIERRE DE startGame
-
-function chooseClass(className) {
-    gameState = 'INPUT_WAIT';
-    print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
-    print("Ingresa el nombre de tu Viajero del Código:");
-    
-    renderOptions({});
-    showInput((name) => {
-        player = new Player(name.toUpperCase(), className);
-        
-        // Equipar arma inicial
-        const initialWeaponName = CLASSES[className].equip[0];
-        const initialWeapon = ITEMS[initialWeaponName];
-        player.inventory.push(initialWeapon);
-        player.equipment[initialWeapon.type] = initialWeapon;
-
-        print(`\n¡Bienvenido, ${player.name}!`);
-        hideInput();
-        updateStatus();
-        exploreLocation();
-    });
-} // <-- CIERRE DE chooseClass
-
-function chooseClass(className) {
-    gameState = 'INPUT_WAIT';
-    print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
-    print("Ingresa el nombre de tu Viajero del Código:");
-    
-    renderOptions({});
-    showInput((name) => {
-        player = new Player(name.toUpperCase(), className);
-        
-        // Equipar arma inicial
-        const initialWeaponName = CLASSES[className].equip[0];
-        const initialWeapon = ITEMS[initialWeaponName];
-        player.inventory.push(initialWeapon);
-        player.equipment[initialWeapon.type] = initialWeapon;
-
-        // Añadir consumibles iniciales (ya están en el constructor, pero esta línea es de la versión robusta)
-        // player.inventory.push(ITEMS.KIT_REPARACION, ITEMS.BATERIA_PODER); 
-        // Si no tienes esta línea, déjala fuera, pero el resto de la estructura es vital:
-        
-        print(`\n¡Bienvenido, ${player.name}!`);
-        hideInput();
-        updateStatus();
-        exploreLocation();
-    });
 }
+
+function chooseClass(className) {
+    gameState = 'INPUT_WAIT';
+    print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
+    print("Ingresa el nombre de tu Viajero del Código:");
     
     renderOptions({});
     showInput((name) => {
@@ -437,12 +393,11 @@ function attemptEscape() {
 // --- LÓGICA DE INVENTARIO Y TIENDA ---
 
 function handleSystemAction(action) {
-    // 🛑 AGREGAR ESTA LÍNEA DE VERIFICACIÓN:
+    // CORRECCIÓN 1: Evita el error "Cannot read properties of null" al inicio
     if (!player) {
         print("\n[SISTEMA] Debes crear tu Viajero del Código antes de acceder al menú.");
         return;
     }
-    // -------------------------------------
     
     if (action === 'S') {
         showStats();
@@ -450,8 +405,9 @@ function handleSystemAction(action) {
         showInventory(gameState === 'COMBAT');
     }
 }
+
 function showStats() {
-    // ESTA LÍNEA EVITA EL ERROR 'Cannot read properties of null'
+    // CORRECCIÓN 2: Chequeo de seguridad (aunque handleSystemAction ya lo hace)
     if (!player) return; 
 
     let statsText = `\n--- ESTADÍSTICAS DE ${player.name} ---\n`;
@@ -467,10 +423,9 @@ function showStats() {
 }
 
 function showInventory(inCombat) {
-    // 🛑 AGREGAMOS ESTA LÍNEA DE SEGURIDAD AL PRINCIPIO
-    if (!player) return; 
-    // ----------------------------------------------------
-    
+    // CORRECCIÓN 3: Chequeo de seguridad (aunque handleSystemAction ya lo hace)
+    if (!player) return;
+
     if (player.inventory.length === 0) {
         print("\n--- INVENTARIO: VACÍO ---");
         renderOptions(inCombat ? getCombatOptions() : getExploreOptions());
@@ -512,40 +467,6 @@ function showInventory(inCombat) {
         
     });
 }
-    print("\n--- INVENTARIO ---");
-    const itemMap = {};
-    player.inventory.forEach((item, index) => {
-        print(`(${index + 1}) ${item.name} (${item.type})`);
-        itemMap[index + 1] = item;
-    });
-
-    print("\nIntroduce el número del ítem para USAR/EQUIPAR (0 para salir):");
-    renderOptions({});
-    
-function showInput(callback) {
-    inputContainer.style.display = 'flex';
-    userInput.value = '';
-    userInput.focus();
-    
-    // Función para manejar el envío
-    const handleSubmission = () => {
-        const value = userInput.value.trim();
-        if (value) {
-            callback(value);
-            userInput.value = '';
-        }
-    }; // <-- CIERRE DE LA FUNCIÓN FLECHA handleSubmission
-
-    // Usar el botón
-    submitBtn.onclick = handleSubmission;
-    
-    // Usar la tecla Enter
-    userInput.onkeyup = (event) => {
-        if (event.key === 'Enter') {
-            handleSubmission();
-        }
-    }; // <-- CIERRE DE LA FUNCIÓN FLECHA de onkeyup
-} // <-- CIERRE DE LA FUNCIÓN showInput
 
 function useConsumible(item, index) {
     player.inventory.splice(index, 1);
@@ -682,12 +603,5 @@ function getCombatOptions() {
 }
 
 
-// ... (Todo el código del juego) ...
-
-// Funciones auxiliares para obtener opciones de estado
-// ... (se mantienen igual las funciones getExploreOptions y getCombatOptions) ...
-
-
 // --- INICIO ---
-// Asegúrate de que esta línea esté al final de tu archivo script.js
 document.addEventListener('DOMContentLoaded', startGame);
