@@ -167,9 +167,31 @@ function startGame() {
         '2': { label: "Hacker (Destreza)", action: () => chooseClass('HACKER') },
         '3': { label: "Ingeniero (Fuerza/RAM)", action: () => chooseClass('INGENIERO') }
     };
-    renderOptions(options); // <--- ESTA FUNCIÓN DEBE EJECUTARSE
+    renderOptions(options);
     hideInput();
-}
+} // <-- CIERRE DE startGame
+
+function chooseClass(className) {
+    gameState = 'INPUT_WAIT';
+    print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
+    print("Ingresa el nombre de tu Viajero del Código:");
+    
+    renderOptions({});
+    showInput((name) => {
+        player = new Player(name.toUpperCase(), className);
+        
+        // Equipar arma inicial
+        const initialWeaponName = CLASSES[className].equip[0];
+        const initialWeapon = ITEMS[initialWeaponName];
+        player.inventory.push(initialWeapon);
+        player.equipment[initialWeapon.type] = initialWeapon;
+
+        print(`\n¡Bienvenido, ${player.name}!`);
+        hideInput();
+        updateStatus();
+        exploreLocation();
+    });
+} // <-- CIERRE DE chooseClass
 
 function chooseClass(className) {
     gameState = 'INPUT_WAIT';
