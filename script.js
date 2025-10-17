@@ -176,12 +176,20 @@ function chooseClass(className) {
     print(`\nHas elegido ser un ${className.replace('_', ' ')}.`);
     print("Ingresa el nombre de tu Viajero del Código:");
     
-    // ESTAS DOS LÍNEAS SON CRÍTICAS
-    renderOptions({}); // Esta línea oculta los botones de clase
-    showInput((name) => { // Esta línea activa el campo de texto y el botón 'Aceptar'
+    renderOptions({});
+    showInput((name) => {
+        player = new Player(name.toUpperCase(), className);
         
-        // ... (El resto de la lógica de creación de personaje) ...
+        // Equipar arma inicial
+        const initialWeaponName = CLASSES[className].equip[0];
+        const initialWeapon = ITEMS[initialWeaponName];
+        player.inventory.push(initialWeapon);
+        player.equipment[initialWeapon.type] = initialWeapon;
 
+        // Añadir consumibles iniciales (ya están en el constructor, pero esta línea es de la versión robusta)
+        // player.inventory.push(ITEMS.KIT_REPARACION, ITEMS.BATERIA_PODER); 
+        // Si no tienes esta línea, déjala fuera, pero el resto de la estructura es vital:
+        
         print(`\n¡Bienvenido, ${player.name}!`);
         hideInput();
         updateStatus();
